@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.offcanvas-sm {
+  @apply bg-gradient-to-b from-slate-500 to-slate-400 text-white;
+}
+
+.offcanvas-header .btn-close {
+  @apply text-slate-900;
+}
