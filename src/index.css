@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  background-color: rgb(241, 245, 241);
+}
+
 .offcanvas-sm {
   @apply bg-gradient-to-b from-slate-500 to-slate-400 text-white;
 }
