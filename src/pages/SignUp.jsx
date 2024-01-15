@@ -2,18 +2,35 @@ import Form from "react-bootstrap/Form";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "../components/Button";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import axiosInstance from "../../utils/axiosUtil";
+import { useSelector } from "react-redux";
+import {
+  registerFailure,
+  registerStart,
+  registerSuccess,
+} from "../redux/auth/authSlice";
+import { useDispatch } from "react-redux";
 
 const SignUp = () => {
+  const { isFetching, error, errMsg, token } = useSelector(
+    (state) => state.auth
+  );
+  const dispatch = useDispatch();
   const [values, setValues] = useState({
     username: "",
     email: "",
     password: "",
   });
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (token) {
+      navigate("/");
+    }
+  }, []);
 
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
@@ -34,7 +51,8 @@ const SignUp = () => {
       });
     }
 
-    setLoading(true);
+    // setLoading(true);
+    dispatch(registerStart());
     try {
       const { data } = await axiosInstance.post(`/api/user/register`, {
         username: username,
@@ -42,14 +60,17 @@ const SignUp = () => {
         password: password,
       });
 
-      console.log("sign up data ", data);
-      toast.success(data?.msg, {
-        style: {
-          borderRadius: "10px",
-          backgroundColor: "rgb(51 65 85)",
-          color: "#fff",
-        },
-      });
+      // console.log("sign up data ", data);
+
+      if (data?.token) {
+        toast.success(data?.msg, {
+          style: {
+            borderRadius: "10px",
+            backgroundColor: "rgb(51 65 85)",
+            color: "#fff",
+          },
+        });
+      }
 
       setTimeout(() => {
         setValues({
@@ -57,14 +78,16 @@ const SignUp = () => {
           email: "",
           password: "",
         });
-        setLoading(false);
+        dispatch(registerSuccess(data));
+        // setLoading(false);
 
         navigate("/");
       }, 1500);
 
       return;
     } catch (error) {
-      setLoading(false);
+      // setLoading(false);
+      dispatch(registerFailure(error?.response?.data?.error?.message));
       // console.log(error?.response?.data?.error?.message); // error message
       // console.log(error?.response?.data?.success); // error success
       return toast.error(error?.response?.data?.error?.message, {
@@ -125,10 +148,14 @@ const SignUp = () => {
         </Form.Group>
 
         <Button
-          disabled={loading}
+          disabled={isFetching}
           type={"submit"}
           title={
-            loading ? <Spinner animation="grow" variant="light" /> : "Sign up"
+            isFetching ? (
+              <Spinner animation="grow" variant="light" />
+            ) : (
+              "Sign up"
+            )
           }
           className={
             "bg-slate-700 text-white hover:opacity-75 disabled:opacity-80 disabled:cursor-not-allowed uppercase"
