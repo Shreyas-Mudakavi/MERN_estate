@@ -50,14 +50,17 @@ const SignUp = () => {
           color: "#fff",
         },
       });
-      setValues({
-        username: "",
-        email: "",
-        password: "",
-      });
-      setLoading(false);
 
-      navigate("/");
+      setTimeout(() => {
+        setValues({
+          username: "",
+          email: "",
+          password: "",
+        });
+        setLoading(false);
+
+        navigate("/");
+      }, 1500);
 
       return;
     } catch (error) {
