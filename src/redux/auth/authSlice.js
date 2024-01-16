@@ -1,13 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const token = localStorage.getItem("userToken");
-const user = localStorage.getItem("userId");
+// const token = localStorage.getItem("userToken");
+// const user = localStorage.getItem("userId");
 
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    user,
-    token: token,
+    user: null,
+    token: null,
+    // user,
+    // token: token,
     isFetching: false,
     error: false,
     errMsg: "",
@@ -25,8 +27,8 @@ const authSlice = createSlice({
       state.user = action.payload.user._id;
       state.token = action.payload.token;
 
-      localStorage.setItem("userToken", state.token);
-      localStorage.setItem("userId", state.user);
+      // localStorage.setItem("userToken", state.token);
+      // localStorage.setItem("userId", state.user);
     },
     loginFailure: (state, action) => {
       state.errMsg = action.payload;
@@ -46,8 +48,8 @@ const authSlice = createSlice({
       state.user = action.payload.user._id;
       state.token = action.payload.token;
 
-      localStorage.setItem("userToken", state.token);
-      localStorage.setItem("userId", state.user);
+      // localStorage.setItem("userToken", state.token);
+      // localStorage.setItem("userId", state.user);
     },
     registerFailure: (state, action) => {
       state.errMsg = action.payload;
@@ -58,8 +60,8 @@ const authSlice = createSlice({
     logOut: (state, action) => {
       state.user = null;
       state.token = null;
-      localStorage.removeItem("userId");
-      localStorage.removeItem("userToken");
+      // localStorage.removeItem("userId");
+      // localStorage.removeItem("userToken");
     },
   },
 });

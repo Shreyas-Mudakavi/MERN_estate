@@ -12,6 +12,7 @@ import {
   loginStart,
   loginSuccess,
 } from "../redux/auth/authSlice";
+import OAuth from "../components/OAuth";
 
 const SignIn = () => {
   const { isFetching, token } = useSelector((state) => state.auth);
@@ -125,6 +126,7 @@ const SignIn = () => {
             "bg-slate-700 text-white hover:opacity-75 disabled:opacity-80 disabled:cursor-not-allowed uppercase"
           }
         />
+        <OAuth />
       </Form>
 
       <div className="flex gap-2 my-4 justify-center">

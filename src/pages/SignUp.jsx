@@ -12,11 +12,10 @@ import {
   registerSuccess,
 } from "../redux/auth/authSlice";
 import { useDispatch } from "react-redux";
+import OAuth from "../components/OAuth";
 
 const SignUp = () => {
-  const { isFetching, error, errMsg, token } = useSelector(
-    (state) => state.auth
-  );
+  const { isFetching, token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const [values, setValues] = useState({
     username: "",
@@ -161,6 +160,7 @@ const SignUp = () => {
             "bg-slate-700 text-white hover:opacity-75 disabled:opacity-80 disabled:cursor-not-allowed uppercase"
           }
         />
+        <OAuth />
       </Form>
 
       <div className="flex gap-2 my-4 justify-center">
