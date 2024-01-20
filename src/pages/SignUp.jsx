@@ -105,7 +105,7 @@ const SignUp = () => {
 
       <Form className="flex flex-col" onSubmit={handleSubmit}>
         <Form.Group className="mb-6">
-          <Form.Label htmlFor="username" className="">
+          <Form.Label htmlFor="username" className="font-semibold">
             Username
           </Form.Label>
           <Form.Control
@@ -120,7 +120,9 @@ const SignUp = () => {
           />
         </Form.Group>
         <Form.Group className="mb-6">
-          <Form.Label htmlFor="email">Email address</Form.Label>
+          <Form.Label htmlFor="email" className="font-semibold">
+            Email address
+          </Form.Label>
           <Form.Control
             type="email"
             id="email"
@@ -133,7 +135,9 @@ const SignUp = () => {
           />
         </Form.Group>
         <Form.Group className="mb-6">
-          <Form.Label htmlFor="password">Password</Form.Label>
+          <Form.Label htmlFor="password" className="font-semibold">
+            Password
+          </Form.Label>
           <Form.Control
             type="password"
             id="password"

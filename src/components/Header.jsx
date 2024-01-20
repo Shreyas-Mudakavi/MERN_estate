@@ -53,7 +53,7 @@ const Header = () => {
   const handleShowMenu = () => setShowMenu(true);
 
   return (
-    <header className="bg-slate-200 shadow-md transition-all duration-300 ease-in-out">
+    <header className="fixed w-full bg-slate-200 shadow-md transition-all duration-300 ease-in-out">
       <div className="flex items-center justify-between mx-auto max-w-6xl p-3">
         <div className="inline sm:hidden">
           <RiMenuUnfoldLine
