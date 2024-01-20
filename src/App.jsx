@@ -9,6 +9,8 @@ import About from "./pages/About";
 import Profile from "./pages/Profile";
 import Header from "./components/Header";
 
+import ProtectedRoute from "../utils/ProtectedRoute";
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -18,7 +20,14 @@ const App = () => {
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/about" element={<About />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

@@ -52,7 +52,7 @@ const authSlice = createSlice({
       // localStorage.setItem("userId", state.user);
     },
     registerFailure: (state, action) => {
-      state.errMsg = action.payload;
+      state.errMsg = action.payload || "Something went wrong";
       state.isFetching = false;
       state.error = true;
     },
@@ -60,6 +60,8 @@ const authSlice = createSlice({
     logOut: (state, action) => {
       state.user = null;
       state.token = null;
+
+      localStorage.clear();
       // localStorage.removeItem("userId");
       // localStorage.removeItem("userToken");
     },

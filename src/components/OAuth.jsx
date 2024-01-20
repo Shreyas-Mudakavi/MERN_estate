@@ -25,15 +25,12 @@ const OAuth = () => {
       const auth = getAuth(app);
 
       const res = await signInWithPopup(auth, provider);
-      console.log("res oauth ", res);
 
       const { data } = await axiosInstance.post("/api/user/google", {
         name: res.user.displayName,
         email: res.user.email,
         photo: res.user.photoURL,
       });
-
-      console.log("backend data oauth ", data);
 
       if (data?.token) {
         toast.success(data?.msg, {
@@ -50,7 +47,6 @@ const OAuth = () => {
         navigate("/");
       }, 1500);
     } catch (error) {
-      console.log("oauth err ", error);
       dispatch(registerFailure(error?.response?.data?.error?.message));
       return toast.error("Something went wrong.", {
         style: {
