@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import Form from "react-bootstrap/Form";
+import InputGroup from "react-bootstrap/InputGroup";
 import ReactPlaceholder from "react-placeholder";
 import toast, { Toaster } from "react-hot-toast";
 import "react-placeholder/lib/reactPlaceholder.css";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import Button from "../components/Button";
 import { TbUserEdit } from "react-icons/tb";
 import {
@@ -13,19 +14,36 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
+import { FaLock, FaUnlockAlt } from "react-icons/fa";
+import {
+  userDeleteFailure,
+  userDeleteStart,
+  userDeleteSuccess,
+  userUpdateFailure,
+  userUpdateStart,
+  userUpdateSuccess,
+} from "../redux/user/userSlice";
+import axiosInstance from "../../utils/axiosUtil";
+import CustomModal from "../components/CustomModal";
+import { useNavigate } from "react-router-dom";
+import { logOut } from "../redux/auth/authSlice";
 
 const Profile = () => {
-  const { isFetching } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+  const { isFetching, user, token } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const [passwordShow, setPasswordShow] = useState(false);
   const { userData, userError, isLoading } = useSelector((state) => state.user);
-  const [values, setValues] = useState({
+  const [imageFile, setImageFile] = useState(null);
+  const [uploadPercentage, setUploadPercentage] = useState(0);
+  const [formData, setFormData] = useState({
     username: userData?.username,
     email: userData?.email,
     password: "",
+    photo: userData?.photo,
   });
-  const [imageFile, setImageFile] = useState(null);
-  const [uploadPercentage, setUploadPercentage] = useState(0);
-  const [formData, setFormData] = useState({});
   const fileRef = useRef(null);
+  const [showDelModal, setShowDelModal] = useState(false);
 
   useEffect(() => {
     setFormData({
@@ -34,17 +52,63 @@ const Profile = () => {
       password: "",
       photo: userData?.photo,
     });
-  }, []);
+  }, [userData]);
 
-  console.log("form data ", formData);
+  const handleDelete = async (delConf) => {
+    if (delConf === "Yes") {
+      dispatch(userDeleteStart());
+      try {
+        const { data } = await axiosInstance.delete(
+          `/api/user/delete-user/${user}`,
+          { headers: { Authorization: token } }
+        );
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
+        setTimeout(() => {
+          toast.success(data?.msg, {
+            style: {
+              borderRadius: "10px",
+              backgroundColor: "rgb(51 65 85)",
+              color: "#fff",
+            },
+          });
+
+          dispatch(logOut());
+          dispatch(userDeleteSuccess());
+          navigate("/");
+        }, 1000);
+      } catch (error) {
+        dispatch(userDeleteFailure(error?.response?.data?.error?.message));
+        return toast.error(error?.response?.data?.error?.message, {
+          style: {
+            borderRadius: "10px",
+            backgroundColor: "rgb(51 65 85)",
+            color: "#fff",
+          },
+        });
+      }
+
+      return;
+    }
+    return;
+  };
+
+  const handleShowDelModal = () => {
+    setShowDelModal(true);
+  };
+
+  const handleConfDelModal = () => {
+    handleDelete("Yes");
+    setShowDelModal(false);
+  };
+
+  const handleCloseDelModal = () => {
+    handleDelete("No");
+    setShowDelModal(false);
   };
 
   const handleFileUplaod = async (imageFile) => {
     const storage = getStorage(app);
-    console.log("firebase storage ", storage);
+    // console.log("firebase storage ", storage);
 
     const fileName = new Date().getTime().toString() + "-" + imageFile?.name;
     const storageRef = ref(storage, fileName);
@@ -89,13 +153,74 @@ const Profile = () => {
     }
   }, [imageFile]);
 
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+    const { username, email, password, photo } = formData;
+
+    if (username?.trim()?.length <= 0) {
+      return toast.error("Username is invalid!", {
+        style: {
+          borderRadius: "10px",
+          backgroundColor: "rgb(51 65 85)",
+          color: "#fff",
+        },
+      });
+    }
+
+    if (email?.trim()?.length <= 0) {
+      return toast.error("Email is invalid!", {
+        style: {
+          borderRadius: "10px",
+          backgroundColor: "rgb(51 65 85)",
+          color: "#fff",
+        },
+      });
+    }
+
+    dispatch(userUpdateStart());
+    try {
+      const { data } = await axiosInstance.put(
+        `/api/user/update-user/${user}`,
+        { username: username, password: password, photo: photo, email: email },
+        { headers: { Authorization: token } }
+      );
+
+      setTimeout(() => {
+        toast.success(data?.msg, {
+          style: {
+            borderRadius: "10px",
+            backgroundColor: "rgb(51 65 85)",
+            color: "#fff",
+          },
+        });
+
+        dispatch(userUpdateSuccess(data?.user));
+
+        setUploadPercentage(0);
+        setImageFile(null);
+      }, 1000);
+
+      return;
+    } catch (error) {
+      dispatch(userUpdateFailure(error?.response?.data?.error?.message));
+      return toast.error(error?.response?.data?.error?.message, {
+        style: {
+          borderRadius: "10px",
+          backgroundColor: "rgb(51 65 85)",
+          color: "#fff",
+        },
+      });
+    }
+  };
+
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-center text-3xl font-semibold my-7">Profile</h1>
 
       <ReactPlaceholder
-        type="text"
-        rows={7}
+        type="media"
+        rows={10}
         showLoadingAnimation
         ready={!isFetching && !isLoading}
       >
@@ -171,32 +296,57 @@ const Profile = () => {
             <Form.Label htmlFor="password" className="font-semibold">
               Password
             </Form.Label>
-            <Form.Control
-              type="password"
-              id="password"
-              name="password"
-              value={formData?.password}
-              placeholder="Password"
-              className="border p-3 rounded-lg mt-2"
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              required
-            />
+            <InputGroup>
+              <Form.Control
+                type={passwordShow ? "text" : "password"}
+                id="password"
+                name="password"
+                value={formData?.password}
+                placeholder="Password"
+                className="border p-3 rounded-lg mt-2"
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+              />
+              <InputGroup.Text
+                onClick={() => {
+                  setPasswordShow(!passwordShow);
+                }}
+                className="mt-2 cursor-pointer hover:opacity-75 transition"
+              >
+                {passwordShow ? <FaUnlockAlt /> : <FaLock />}
+              </InputGroup.Text>
+            </InputGroup>
           </Form.Group>
 
           <Button
             type={"submit"}
             className={
-              "bg-slate-700 text-white uppercase hover:opacity-75 transition disabled:opacity-80 disabled:cursor-not-allowed"
+              "bg-slate-700 text-white mb-2 uppercase hover:opacity-75 transition disabled:opacity-80 disabled:cursor-not-allowed"
             }
             title={"Update"}
-            disabled={uploadPercentage > 0 && uploadPercentage !== 100}
+            disabled={
+              (uploadPercentage > 0 && uploadPercentage !== 100) || isLoading
+            }
+          />
+          <Button
+            type={"button"}
+            className={
+              "bg-green-700 text-white uppercase hover:opacity-75 transition disabled:opacity-80 disabled:cursor-not-allowed"
+            }
+            onClick={() => navigate("/create-listing")}
+            title={"Create Listing"}
+            disabled={
+              (uploadPercentage > 0 && uploadPercentage !== 100) || isLoading
+            }
           />
         </Form>
         <div className="flex items-center justify-end mt-5">
           <Button
-            disabled={uploadPercentage > 0 && uploadPercentage !== 100}
+            disabled={
+              (uploadPercentage > 0 && uploadPercentage !== 100) || isLoading
+            }
+            onClick={handleShowDelModal}
             title={"Delete account"}
             className={
               "bg-red-700 text-white hover:opacity-75 transition uppercase disabled:opacity-80 disabled:cursor-not-allowed"
@@ -206,6 +356,22 @@ const Profile = () => {
       </ReactPlaceholder>
 
       <Toaster />
+
+      <CustomModal
+        handleShow={handleShowDelModal}
+        handleClose={handleCloseDelModal}
+        show={showDelModal}
+        modalheading={"Are you sure you want to delete your account?"}
+        modalBody={
+          <>
+            <p>
+              <b>Note:</b>
+            </p>
+            <p>All the data associated with your account will be delete!</p>
+          </>
+        }
+        handleConfDelModal={handleConfDelModal}
+      />
     </div>
   );
 };
