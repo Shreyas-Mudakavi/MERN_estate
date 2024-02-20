@@ -1,8 +1,10 @@
 import Form from "react-bootstrap/Form";
+import Spinner from "react-bootstrap/Spinner";
 import toast, { Toaster } from "react-hot-toast";
 import Container from "react-bootstrap/Container";
 import Button from "../components/Button";
-import { useEffect, useState } from "react";
+import { format } from "date-fns";
+import { useState } from "react";
 import {
   getDownloadURL,
   getStorage,
@@ -10,8 +12,21 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
+import { FaBed } from "react-icons/fa";
+import { FaHouseCircleCheck } from "react-icons/fa6";
+import { PiBathtubBold } from "react-icons/pi";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addListingFailure,
+  addListingStart,
+  addListingSuccess,
+} from "../redux/listing/listingSlice";
+import axiosInstance from "../../utils/axiosUtil";
 
 const CreateListing = () => {
+  const dispatch = useDispatch();
+  const { token, user } = useSelector((state) => state.auth);
+  const { loadingListing } = useSelector((state) => state.listing);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -25,10 +40,11 @@ const CreateListing = () => {
     petsAllowed: false,
     bedrooms: 1,
     bathrooms: 1,
-    regulaPrice: 0,
+    regularPrice: 0,
     discountPrice: 0,
     price: 0,
     imageUrls: [],
+    availableFrom: "",
   });
   const [propertyType, setPropertyType] = useState("");
   const [imageFiles, setImageFiles] = useState(null);
@@ -37,10 +53,6 @@ const CreateListing = () => {
   const handlePropertyType = (e) => {
     setPropertyType(e.target.value);
   };
-
-  console.log(formData);
-  console.log(propertyType);
-  console.log(imageFiles);
 
   const storeImage = async (imageFile) => {
     return new Promise((resolve, reject) => {
@@ -82,7 +94,10 @@ const CreateListing = () => {
   };
 
   const handleFilesUpload = async () => {
-    if (imageFiles?.length > 0 && imageFiles?.length < 7) {
+    if (
+      imageFiles?.length > 0 &&
+      imageFiles?.length + formData?.imageUrls?.length < 7
+    ) {
       const promises = [];
 
       for (let i = 0; i < imageFiles?.length; i++) {
@@ -90,11 +105,31 @@ const CreateListing = () => {
       }
 
       const urls = await Promise.all(promises);
-      console.log(urls);
-      setFormData({ ...formData, imageUrls: formData.imageUrls.concat(urls) });
+      //   console.log(urls);
+      if (urls) {
+        setFormData({
+          ...formData,
+          imageUrls: formData.imageUrls.concat(urls),
+        });
+        return toast.success("Image(s) have been uploaded!", {
+          style: {
+            borderRadius: "10px",
+            backgroundColor: "rgb(51 65 85)",
+            color: "#fff",
+          },
+        });
+      } else {
+        return toast.error("Image upload failed (max 2mb per image)", {
+          style: {
+            borderRadius: "10px",
+            backgroundColor: "rgb(51 65 85)",
+            color: "#fff",
+          },
+        });
+      }
     }
 
-    if (imageFiles?.length === 0) {
+    if (imageFiles === null) {
       return toast.error("Atleast 1 image is required!", {
         style: {
           borderRadius: "10px",
@@ -104,7 +139,7 @@ const CreateListing = () => {
       });
     }
 
-    if (imageFiles?.length > 7) {
+    if (imageFiles?.length > 7 || formData?.imageUrls?.length > 7) {
       return toast.error("Only 6 images can be uploaded!", {
         style: {
           borderRadius: "10px",
@@ -115,17 +150,114 @@ const CreateListing = () => {
     }
   };
 
-  //   useEffect(() => {
-  //     if (imageFiles) {
-  //       handleFilesUpload(imageFiles);
-  //     }
-  //   }, [imageFiles]);
-
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
     if (!imageFiles) {
       return toast.error("Atleast 1 image is required!", {
+        style: {
+          borderRadius: "10px",
+          backgroundColor: "rgb(51 65 85)",
+          color: "#fff",
+        },
+      });
+    }
+
+    if (formData?.description?.length < 10) {
+      return toast.error("Description is too short!", {
+        style: {
+          borderRadius: "10px",
+          backgroundColor: "rgb(51 65 85)",
+          color: "#fff",
+        },
+      });
+    }
+
+    const {
+      address,
+      bathrooms,
+      bedrooms,
+      description,
+      discountPrice,
+      furnished,
+      heat,
+      hydro,
+      imageUrls,
+      internet,
+      name,
+      parking,
+      petsAllowed,
+      price,
+      water,
+      regularPrice,
+      availableFrom,
+    } = formData;
+
+    dispatch(addListingStart());
+    try {
+      const { data } = await axiosInstance.post(
+        `/api/listing/create-listing`,
+        {
+          address,
+          bathrooms,
+          bedrooms,
+          description,
+          discountPrice,
+          furnished,
+          heat,
+          hydro,
+          imageUrls,
+          internet,
+          name,
+          parking,
+          petsAllowed,
+          price,
+          water,
+          regularPrice,
+          propertyType,
+          availableFrom,
+        },
+        { headers: { Authorization: token } }
+      );
+
+      console.log("add listing ", data);
+
+      setTimeout(() => {
+        toast.success(data?.msg, {
+          style: {
+            borderRadius: "10px",
+            backgroundColor: "rgb(51 65 85)",
+            color: "#fff",
+          },
+        });
+
+        dispatch(addListingSuccess(data?.listing));
+        setUploadPercentage(0);
+        setImageFiles(null);
+        setPropertyType("");
+        setFormData({
+          name: "",
+          description: "",
+          address: "",
+          furnished: false,
+          hydro: false,
+          heat: false,
+          water: false,
+          internet: false,
+          parking: false,
+          petsAllowed: false,
+          bedrooms: 1,
+          bathrooms: 1,
+          regularPrice: 0,
+          discountPrice: 0,
+          price: 0,
+          imageUrls: [],
+          availableFrom: "",
+        });
+      }, 1200);
+    } catch (error) {
+      dispatch(addListingFailure(error?.response?.data?.error?.message));
+      return toast.error(error?.response?.data?.error?.message, {
         style: {
           borderRadius: "10px",
           backgroundColor: "rgb(51 65 85)",
@@ -143,26 +275,44 @@ const CreateListing = () => {
 
       <Form className=" gap-x-6 mb-7" onSubmit={handleFormSubmit}>
         <div className=" ">
-          <Form.Group className="my-2">
-            <Form.Label htmlFor="name" className="font-semibold">
-              Name
-            </Form.Label>
-            <Form.Control
-              type="text"
-              className="border p-3 rounded-lg "
-              name="name"
-              id="name"
-              required
-              maxLength="62"
-              min="10"
-              value={formData?.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              placeholder="Name"
-            />
-          </Form.Group>
+          <div className="flex items-center justify-between gap-x-2">
+            <Form.Group className="my-2 flex-1">
+              <Form.Label htmlFor="name" className="font-semibold">
+                Name
+              </Form.Label>
+              <Form.Control
+                type="text"
+                className="border p-3 rounded-lg "
+                name="name"
+                id="name"
+                required
+                maxLength="62"
+                value={formData?.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                placeholder="Name"
+              />
+            </Form.Group>
 
+            <Form.Group className="my-2 flex-1">
+              <Form.Label htmlFor="address" className="font-semibold">
+                Address
+              </Form.Label>
+              <Form.Control
+                type="text"
+                className="border p-3 rounded-lg "
+                name="address"
+                id="address"
+                required
+                value={formData?.address}
+                onChange={(e) =>
+                  setFormData({ ...formData, address: e.target.value })
+                }
+                placeholder="Address"
+              />
+            </Form.Group>
+          </div>
           <Form.Group className="my-2">
             <Form.Label htmlFor="description" className="font-semibold">
               Description
@@ -173,6 +323,7 @@ const CreateListing = () => {
               name="description"
               id="description"
               required
+              minLength="10"
               value={formData?.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
@@ -181,37 +332,60 @@ const CreateListing = () => {
             />
           </Form.Group>
 
-          <Form.Group className="my-2">
-            <Form.Label htmlFor="address" className="font-semibold">
-              Address
-            </Form.Label>
-            <Form.Control
-              type="text"
-              className="border p-3 rounded-lg "
-              name="address"
-              id="address"
-              required
-              value={formData?.address}
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
-              placeholder="Address"
-            />
-          </Form.Group>
-
           <div className="flex gap-2 flex-col my-2">
-            <Form.Label className="font-semibold">Property type</Form.Label>
-            <div>
-              <Form.Select
-                aria-label="Property type"
-                onChange={handlePropertyType}
-                value={propertyType}
-              >
-                <option value={""}>Select type</option>
-                <option value="Rent">Rent</option>
-                <option value="Sell">Sell</option>
-              </Form.Select>
+            <div className="flex items-center w-full gap-x-2">
+              <div className="flex-1">
+                <Form.Label className="font-semibold">Property type</Form.Label>
+                <Form.Select
+                  required
+                  aria-label="Property type"
+                  onChange={handlePropertyType}
+                  value={propertyType}
+                >
+                  <option value={""}>Select type</option>
+                  <option value="Rent">Rent</option>
+                  <option value="Sell">Sell</option>
+                </Form.Select>
+              </div>
+
+              <div className="flex-1">
+                <Form.Label className="font-semibold flex items-center gap-x-2">
+                  Available from{" "}
+                  {formData?.availableFrom !== "" && (
+                    <p className="text-sm font-normal text-gray-700">
+                      {format(
+                        new Date(
+                          new Date(formData?.availableFrom).valueOf() +
+                            new Date(
+                              formData?.availableFrom
+                            ).getTimezoneOffset() *
+                              60 *
+                              1000
+                        ),
+                        "MMMM dd, yyyy"
+                      )}
+                    </p>
+                  )}
+                </Form.Label>
+                <Form.Control
+                  type="date"
+                  required
+                  value={formData?.availableFrom}
+                  onChange={(e) =>
+                    setFormData({ ...formData, availableFrom: e.target.value })
+                  }
+                  onKeyDown={(e) => e.preventDefault()}
+                  //   min={new Date().setTime()}
+                  min={new Date(
+                    new Date().getTime() -
+                      new Date().getTimezoneOffset() * 60000
+                  )
+                    .toJSON() // this will subtract the time from the utc time and returns it
+                    .slice(0, 10)}
+                />
+              </div>
             </div>
+
             {/* <div>
               <Form.Check type="radio" id="sale" name="sale" label="Sale" />
             </div>
@@ -219,97 +393,95 @@ const CreateListing = () => {
               <Form.Check type="radio" id="rent" name="rent" label="Rent" />
             </div> */}
             <div className="my-2">
-              <Form.Label className="font-semibold">Features</Form.Label>
-              <div>
-                <Form.Check
-                  value={formData?.furnished}
-                  onChange={(e) =>
-                    setFormData({ ...formData, furnished: e.target.checked })
-                  }
-                  type="checkbox"
-                  id="furnished"
-                  name="furnished"
-                  label="Furnished"
-                />
-              </div>
-              <div>
-                <Form.Check
-                  value={formData?.hydro}
-                  onChange={(e) =>
-                    setFormData({ ...formData, hydro: e.target.checked })
-                  }
-                  type="checkbox"
-                  id="hydro"
-                  name="hydro"
-                  label="Hydro"
-                />
-              </div>
+              <Form.Label className="font-semibold flex items-center gap-x-2">
+                <FaHouseCircleCheck />
+                <p>Features / Utilities</p>
+              </Form.Label>
+              <div className="flex justify-between">
+                <div>
+                  <Form.Check
+                    value={formData?.hydro}
+                    onChange={(e) =>
+                      setFormData({ ...formData, hydro: e.target.checked })
+                    }
+                    type="checkbox"
+                    id="hydro"
+                    name="hydro"
+                    label="Hydro"
+                  />
+                  <Form.Check
+                    value={formData?.water}
+                    onChange={(e) =>
+                      setFormData({ ...formData, water: e.target.checked })
+                    }
+                    type="checkbox"
+                    id="water"
+                    name="water"
+                    label="Water"
+                  />
+                  <Form.Check
+                    value={formData?.heat}
+                    onChange={(e) =>
+                      setFormData({ ...formData, heat: e.target.checked })
+                    }
+                    type="checkbox"
+                    id="heat"
+                    name="heat"
+                    label="Heat"
+                  />
+                </div>
 
-              <div>
-                <Form.Check
-                  value={formData?.water}
-                  onChange={(e) =>
-                    setFormData({ ...formData, water: e.target.checked })
-                  }
-                  type="checkbox"
-                  id="water"
-                  name="water"
-                  label="Water"
-                />
-              </div>
+                <div>
+                  <Form.Check
+                    value={formData?.internet}
+                    onChange={(e) =>
+                      setFormData({ ...formData, internet: e.target.checked })
+                    }
+                    type="checkbox"
+                    id="internet"
+                    name="internet"
+                    label="Internet"
+                  />
+                  <Form.Check
+                    value={formData?.parking}
+                    onChange={(e) =>
+                      setFormData({ ...formData, parking: e.target.checked })
+                    }
+                    type="checkbox"
+                    id="parking"
+                    name="parking"
+                    label="Parking"
+                  />
+                  <Form.Check
+                    value={formData?.furnished}
+                    onChange={(e) =>
+                      setFormData({ ...formData, furnished: e.target.checked })
+                    }
+                    type="checkbox"
+                    id="furnished"
+                    name="furnished"
+                    label="Furnished"
+                  />
+                </div>
 
-              <div>
-                <Form.Check
-                  value={formData?.heat}
-                  onChange={(e) =>
-                    setFormData({ ...formData, heat: e.target.checked })
-                  }
-                  type="checkbox"
-                  id="heat"
-                  name="heat"
-                  label="Heat"
-                />
-              </div>
-
-              <div>
-                <Form.Check
-                  value={formData?.internet}
-                  onChange={(e) =>
-                    setFormData({ ...formData, internet: e.target.checked })
-                  }
-                  type="checkbox"
-                  id="internet"
-                  name="internet"
-                  label="Internet"
-                />
-              </div>
-
-              <div>
-                <Form.Check
-                  value={formData?.parking}
-                  onChange={(e) =>
-                    setFormData({ ...formData, parking: e.target.checked })
-                  }
-                  type="checkbox"
-                  id="parking"
-                  name="parking"
-                  label="Parking"
-                />
-              </div>
-
-              <div>
-                <Form.Check
-                  value={formData?.petsAllowed}
-                  onChange={(e) =>
-                    setFormData({ ...formData, petsAllowed: e.target.checked })
-                  }
-                  type="checkbox"
-                  id="petsAllowed"
-                  name="petsAllowed"
-                  label="Pets Allowed"
-                />
+                <div>
+                  <Form.Check
+                    value={formData?.petsAllowed}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        petsAllowed: e.target.checked,
+                      })
+                    }
+                    type="checkbox"
+                    id="petsAllowed"
+                    name="petsAllowed"
+                    label="Pets Allowed"
+                  />
+                </div>
               </div>
             </div>
+
             {/* <div>
               <Form.Check
                 type="checkbox"
@@ -323,8 +495,11 @@ const CreateListing = () => {
           <div className="flex gap-x-4 flex-col sm:flex-row">
             <div className="flex-1">
               <Form.Group className="my-2">
-                <Form.Label htmlFor="bedrooms" className="font-semibold">
-                  Bedroom(s)
+                <Form.Label
+                  htmlFor="bedrooms"
+                  className="font-semibold flex items-center gap-x-2"
+                >
+                  <FaBed /> <p>Bedroom(s)</p>
                 </Form.Label>
                 <Form.Control
                   type="number"
@@ -346,8 +521,11 @@ const CreateListing = () => {
 
             <div className="flex-1">
               <Form.Group className="my-2">
-                <Form.Label htmlFor="bathrooms" className="font-semibold">
-                  Bathroom(s)
+                <Form.Label
+                  htmlFor="bathrooms"
+                  className="font-semibold flex items-center gap-x-2"
+                >
+                  <PiBathtubBold /> <p>Bathroom(s)</p>
                 </Form.Label>
                 <Form.Control
                   type="number"
@@ -384,14 +562,14 @@ const CreateListing = () => {
                     </Form.Label>
                     <Form.Control
                       type="number"
-                      value={formData?.regulaPrice}
+                      value={formData?.regularPrice}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          regulaPrice: parseFloat(e.target.value),
+                          regularPrice: parseFloat(e.target.value),
                         })
                       }
-                      min={1}
+                      min={0}
                       className="border p-3 rounded-lg"
                       name="regularPrice"
                       id="regularPrice"
@@ -420,7 +598,7 @@ const CreateListing = () => {
                           discountPrice: parseFloat(e.target.value),
                         })
                       }
-                      min={1}
+                      min={0}
                       className="border p-3 rounded-lg"
                       name="discountPrice"
                       id="discountPrice"
@@ -449,7 +627,7 @@ const CreateListing = () => {
                       price: parseFloat(e.target.value),
                     })
                   }
-                  min={1}
+                  min={0}
                   className="border p-3 rounded-lg"
                   name="price"
                   id="price"
@@ -486,13 +664,42 @@ const CreateListing = () => {
                   className={
                     "bg-green-700 text-white mb-2 uppercase hover:opacity-75 transition disabled:opacity-80 disabled:cursor-not-allowed"
                   }
-                  disabled={uploadPercentage > 0 && uploadPercentage !== 100}
+                  disabled={
+                    (uploadPercentage > 0 && uploadPercentage !== 100) ||
+                    loadingListing
+                  }
                   title={
-                    uploadPercentage > 0 && uploadPercentage !== 100
-                      ? "Upload"
-                      : "Upload..."
+                    (uploadPercentage > 0 && uploadPercentage !== 100) ||
+                    loadingListing ? (
+                      <Spinner animation="grow" variant="" />
+                    ) : (
+                      "Upload"
+                    )
                   }
                 />
+              </div>
+              {formData?.imageUrls?.length > 0 && (
+                <p className="font-semibold my-2">
+                  Uploaded Images{" "}
+                  <span className="font-normal text-gray-700 ml-2 text-sm">
+                    Click on image to remove it
+                  </span>
+                </p>
+              )}
+              <div className="flex gap-x-4 my-2">
+                {formData?.imageUrls?.length > 0 &&
+                  formData?.imageUrls?.map((image, i) => (
+                    <img
+                      //   onClick={() => {
+                      //     const imgIndex = formData?.imageUrls?.findIndex(image);
+                      //     console.log(imgIndex);
+                      //   }}
+                      src={image}
+                      key={i}
+                      alt="Uploaded image"
+                      className="w-40 h-40 object-cover rounded-lg  hover:opacity-75 cursor-pointer transition"
+                    />
+                  ))}
               </div>
             </Form.Group>
           </div>
@@ -502,8 +709,17 @@ const CreateListing = () => {
           className={
             "bg-slate-700 text-white mb-2  w-full uppercase hover:opacity-75 transition disabled:opacity-80 disabled:cursor-not-allowed"
           }
-          disabled={uploadPercentage > 0 && uploadPercentage !== 100}
-          title={"Create Listing"}
+          disabled={
+            (uploadPercentage > 0 && uploadPercentage !== 100) || loadingListing
+          }
+          title={
+            (uploadPercentage > 0 && uploadPercentage !== 100) ||
+            loadingListing ? (
+              <Spinner animation="grow" variant="light" />
+            ) : (
+              "Create Listing"
+            )
+          }
         />
       </Form>
 
