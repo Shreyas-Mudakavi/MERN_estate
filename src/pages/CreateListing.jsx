@@ -73,7 +73,7 @@ const CreateListing = () => {
         (error) => {
           if (error.status === 403) {
             reject(error);
-            return toast.error("There was a error uploading image.", {
+            return toast.error("There was an error uploading image.", {
               style: {
                 borderRadius: "10px",
                 backgroundColor: "rgb(51 65 85)",
@@ -111,7 +111,7 @@ const CreateListing = () => {
           ...formData,
           imageUrls: formData.imageUrls.concat(urls),
         });
-        return toast.success("Image(s) have been uploaded!", {
+        return toast.success("Image(s) have been uploaded.", {
           style: {
             borderRadius: "10px",
             backgroundColor: "rgb(51 65 85)",
@@ -119,7 +119,7 @@ const CreateListing = () => {
           },
         });
       } else {
-        return toast.error("Image upload failed (max 2mb per image)", {
+        return toast.error("Image upload failed (max 2mb per image).", {
           style: {
             borderRadius: "10px",
             backgroundColor: "rgb(51 65 85)",
@@ -130,7 +130,7 @@ const CreateListing = () => {
     }
 
     if (imageFiles === null) {
-      return toast.error("Atleast 1 image is required!", {
+      return toast.error("Select images to upload.", {
         style: {
           borderRadius: "10px",
           backgroundColor: "rgb(51 65 85)",
@@ -140,7 +140,7 @@ const CreateListing = () => {
     }
 
     if (imageFiles?.length > 7 || formData?.imageUrls?.length > 7) {
-      return toast.error("Only 6 images can be uploaded!", {
+      return toast.error("Only 6 images can be uploaded.", {
         style: {
           borderRadius: "10px",
           backgroundColor: "rgb(51 65 85)",
@@ -154,7 +154,7 @@ const CreateListing = () => {
     e.preventDefault();
 
     if (!imageFiles) {
-      return toast.error("Atleast 1 image is required!", {
+      return toast.error("Atleast 1 image is required.", {
         style: {
           borderRadius: "10px",
           backgroundColor: "rgb(51 65 85)",
@@ -164,7 +164,7 @@ const CreateListing = () => {
     }
 
     if (formData?.description?.length < 10) {
-      return toast.error("Description is too short!", {
+      return toast.error("Description is too short.", {
         style: {
           borderRadius: "10px",
           backgroundColor: "rgb(51 65 85)",
@@ -220,8 +220,6 @@ const CreateListing = () => {
         { headers: { Authorization: token } }
       );
 
-      console.log("add listing ", data);
-
       setTimeout(() => {
         toast.success(data?.msg, {
           style: {
@@ -273,7 +271,7 @@ const CreateListing = () => {
         Listing Details
       </h1>
 
-      <Form className=" gap-x-6 mb-7" onSubmit={handleFormSubmit}>
+      <Form className="gap-x-6 mb-7" onSubmit={handleFormSubmit}>
         <div className=" ">
           <div className="flex items-center justify-between gap-x-2">
             <Form.Group className="my-2 flex-1">
@@ -681,24 +679,44 @@ const CreateListing = () => {
               {formData?.imageUrls?.length > 0 && (
                 <p className="font-semibold my-2">
                   Uploaded Images{" "}
-                  <span className="font-normal text-gray-700 ml-2 text-sm">
+                  {/* <span className="font-normal text-gray-700 ml-2 text-sm">
                     Click on image to remove it
-                  </span>
+                  </span> */}
                 </p>
               )}
-              <div className="flex gap-x-4 my-2">
+              <div className="flex gap-y-4 my-2 flex-col">
                 {formData?.imageUrls?.length > 0 &&
                   formData?.imageUrls?.map((image, i) => (
-                    <img
-                      //   onClick={() => {
-                      //     const imgIndex = formData?.imageUrls?.findIndex(image);
-                      //     console.log(imgIndex);
-                      //   }}
-                      src={image}
+                    <div
                       key={i}
-                      alt="Uploaded image"
-                      className="w-40 h-40 object-cover rounded-lg  hover:opacity-75 cursor-pointer transition"
-                    />
+                      className="flex items-center justify-between bg-slate-200 p-3 rounded-lg border shadow-md border-slate-600"
+                    >
+                      <img
+                        src={image}
+                        alt="Uploaded image"
+                        className="w-40 h-40 object-cover rounded-lg hover:opacity-75 cursor-pointer transition"
+                      />
+
+                      <Button
+                        type={"button"}
+                        onClick={() => {
+                          const imgIndex = formData?.imageUrls?.findIndex(
+                            (img, index) => index === i
+                          );
+
+                          setFormData({
+                            ...formData,
+                            imageUrls: formData.imageUrls.filter(
+                              (img, i) => i !== imgIndex
+                            ),
+                          });
+                        }}
+                        title={"Delete"}
+                        className={
+                          "text-white bg-red-700 mb-2 uppercase hover:opacity-75 transition disabled:opacity-80 disabled:cursor-not-allowed"
+                        }
+                      />
+                    </div>
                   ))}
               </div>
             </Form.Group>
