@@ -5,7 +5,9 @@ import { jwtDecode } from "jwt-decode";
 import { logOut } from "../src/redux/auth/authSlice";
 
 const ProtectedRoute = ({ children }) => {
-  const { isFetching, token } = useSelector((state) => state.auth);
+  const { isFetching, token } = useSelector(
+    (state) => state.persistedReducer.auth
+  );
   const dispatch = useDispatch();
   const navigate = useNavigate();
 

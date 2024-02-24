@@ -1,4 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import "swiper/css/bundle";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -9,6 +10,9 @@ import About from "./pages/About";
 import Profile from "./pages/Profile";
 import Header from "./components/Header";
 import CreateListing from "./pages/CreateListing";
+import ShowListings from "./pages/ShowListings";
+import UpdateListing from "./pages/UpdateListing";
+import ViewListing from "./pages/ViewListing";
 
 import ProtectedRoute from "../utils/ProtectedRoute";
 
@@ -30,10 +34,34 @@ const App = () => {
           }
         />
         <Route
+          path="/my-listings"
+          element={
+            <ProtectedRoute>
+              <ShowListings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/profile"
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/update-listing/:id"
+          element={
+            <ProtectedRoute>
+              <UpdateListing />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/listing/:id"
+          element={
+            <ProtectedRoute>
+              <ViewListing />
             </ProtectedRoute>
           }
         />

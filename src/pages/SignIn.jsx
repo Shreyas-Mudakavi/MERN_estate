@@ -15,7 +15,9 @@ import {
 import OAuth from "../components/OAuth";
 
 const SignIn = () => {
-  const { isFetching, token } = useSelector((state) => state.auth);
+  const { isFetching, token } = useSelector(
+    (state) => state.persistedReducer.auth
+  );
   const dispatch = useDispatch();
   const [values, setValues] = useState({
     email: "",

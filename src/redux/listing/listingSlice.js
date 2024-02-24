@@ -27,6 +27,24 @@ const listingSlice = createSlice({
       state.listingErrorMsg = action.payload;
     },
 
+    getSingleListingStart: (state, action) => {
+      state.loadingListing = true;
+      state.listingError = false;
+      state.listingErrorMsg = "";
+    },
+    getSingleListingSuccess: (state, action) => {
+      state.loadingListing = false;
+      state.listingError = false;
+      state.listingErrorMsg = "";
+
+      state.listingData = action.payload;
+    },
+    getSingleListingFailure: (state, action) => {
+      state.loadingListing = false;
+      state.listingError = true;
+      state.listingErrorMsg = action.payload;
+    },
+
     addListingStart: (state, action) => {
       state.loadingListing = true;
       state.listingError = false;
@@ -36,8 +54,6 @@ const listingSlice = createSlice({
       state.loadingListing = false;
       state.listingError = false;
       state.listingErrorMsg = "";
-
-      state.listingData = action.payload;
     },
     addListingFailure: (state, action) => {
       state.loadingListing = false;
@@ -96,5 +112,8 @@ export const {
   updateListingFailure,
   updateListingStart,
   updateListingSuccess,
+  getSingleListingFailure,
+  getSingleListingStart,
+  getSingleListingSuccess,
 } = listingSlice.actions;
 export default listingSlice.reducer;

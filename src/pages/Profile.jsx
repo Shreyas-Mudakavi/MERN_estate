@@ -30,10 +30,14 @@ import { logOut } from "../redux/auth/authSlice";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { isFetching, user, token } = useSelector((state) => state.auth);
+  const { isFetching, user, token } = useSelector(
+    (state) => state.persistedReducer.auth
+  );
   const dispatch = useDispatch();
   const [passwordShow, setPasswordShow] = useState(false);
-  const { userData, userError, isLoading } = useSelector((state) => state.user);
+  const { userData, userError, isLoading } = useSelector(
+    (state) => state.persistedReducer.user
+  );
   const [imageFile, setImageFile] = useState(null);
   const [uploadPercentage, setUploadPercentage] = useState(0);
   const [formData, setFormData] = useState({
@@ -341,7 +345,24 @@ const Profile = () => {
             }
           />
         </Form>
-        <div className="flex items-center justify-end mt-5">
+
+        <div className="flex items-center justify-center my-3">
+          <Button
+            disabled={
+              (uploadPercentage > 0 && uploadPercentage !== 100) || isLoading
+            }
+            onClick={() => {
+              navigate("/my-listings");
+            }}
+            type={"button"}
+            title={"Show my listings"}
+            className={
+              "bg-transparent text-green-700 border-none hover:opacity-75 transition disabled:opacity-80 disabled:cursor-not-allowed"
+            }
+          />
+        </div>
+
+        <div className="flex items-center justify-end">
           <Button
             disabled={
               (uploadPercentage > 0 && uploadPercentage !== 100) || isLoading
@@ -349,7 +370,7 @@ const Profile = () => {
             onClick={handleShowDelModal}
             title={"Delete account"}
             className={
-              "bg-red-700 text-white hover:opacity-75 transition uppercase disabled:opacity-80 disabled:cursor-not-allowed"
+              "bg-transparent text-red-700 border-none hover:opacity-75 transition disabled:opacity-80 disabled:cursor-not-allowed"
             }
           />
         </div>

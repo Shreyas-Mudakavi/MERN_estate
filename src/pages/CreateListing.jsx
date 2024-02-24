@@ -22,10 +22,12 @@ import {
   addListingSuccess,
 } from "../redux/listing/listingSlice";
 import axiosInstance from "../../utils/axiosUtil";
+import { useNavigate } from "react-router-dom";
 
 const CreateListing = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { token, user } = useSelector((state) => state.auth);
+  const { token, user } = useSelector((state) => state.persistedReducer.auth);
   const { loadingListing } = useSelector((state) => state.listing);
   const [formData, setFormData] = useState({
     name: "",
@@ -229,7 +231,7 @@ const CreateListing = () => {
           },
         });
 
-        dispatch(addListingSuccess(data?.listing));
+        dispatch(addListingSuccess());
         setUploadPercentage(0);
         setImageFiles(null);
         setPropertyType("");
@@ -252,6 +254,8 @@ const CreateListing = () => {
           imageUrls: [],
           availableFrom: "",
         });
+
+        navigate("/my-listings");
       }, 1200);
     } catch (error) {
       dispatch(addListingFailure(error?.response?.data?.error?.message));

@@ -15,7 +15,9 @@ import { useDispatch } from "react-redux";
 import OAuth from "../components/OAuth";
 
 const SignUp = () => {
-  const { isFetching, token } = useSelector((state) => state.auth);
+  const { isFetching, token } = useSelector(
+    (state) => state.persistedReducer.auth
+  );
   const dispatch = useDispatch();
   const [values, setValues] = useState({
     username: "",

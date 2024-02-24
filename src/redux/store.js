@@ -5,6 +5,7 @@ import storage from "redux-persist/lib/storage";
 import authReducer from "./auth/authSlice";
 import getUserReducer from "./user/userSlice";
 import listingReducer from "./listing/listingSlice";
+import getListingReducer from "./listing/getListingSlice";
 
 const persistConfig = {
   key: "auth",
@@ -20,13 +21,17 @@ const userPersistConfig = {
 const rootReducer = combineReducers({
   auth: authReducer,
   user: persistReducer(userPersistConfig, getUserReducer),
-  listing: listingReducer,
+  // listing: listingReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
-  reducer: persistedReducer,
+  reducer: {
+    persistedReducer,
+    listing: listingReducer,
+    getListing: getListingReducer,
+  },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,

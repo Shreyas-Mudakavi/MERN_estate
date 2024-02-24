@@ -16,8 +16,12 @@ import { logOut } from "../redux/auth/authSlice";
 
 const Header = () => {
   const navigate = useNavigate();
-  const { token, isFetching, user } = useSelector((state) => state.auth);
-  const { isLoading, userData, userError } = useSelector((state) => state.user);
+  const { token, isFetching, user } = useSelector(
+    (state) => state.persistedReducer.auth
+  );
+  const { isLoading, userData, userError } = useSelector(
+    (state) => state.persistedReducer.user
+  );
   const dispatch = useDispatch();
   const [showMenu, setShowMenu] = useState(false);
 
