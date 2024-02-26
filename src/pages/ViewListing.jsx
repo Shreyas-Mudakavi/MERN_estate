@@ -1,4 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { GiSofa } from "react-icons/gi";
+import { MdPets, MdWifiPassword } from "react-icons/md";
+import { RxCross2 } from "react-icons/rx";
+import { TiTick } from "react-icons/ti";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import SwiperCore from "swiper";
@@ -13,6 +17,15 @@ import {
   getListingStart,
   getListingSuccess,
 } from "../redux/listing/getListingSlice";
+import {
+  FaHouseCircleCheck,
+  FaLocationDot,
+  FaSquareParking,
+} from "react-icons/fa6";
+import { format, formatDistance } from "date-fns";
+import { PiBathtubBold } from "react-icons/pi";
+import { FaBed, FaCalendarCheck } from "react-icons/fa";
+import Button from "../components/Button";
 
 const ViewListing = () => {
   SwiperCore.use([Navigation]);
@@ -57,7 +70,7 @@ const ViewListing = () => {
 
   useEffect(() => {
     fetchListing();
-  }, [params.id]);
+  }, []);
 
   return (
     <ReactPlaceholder
@@ -73,7 +86,7 @@ const ViewListing = () => {
             <SwiperSlide key={i}>
               <img
                 src={image}
-                className="w-full h-[550px]"
+                className="w-full md:h-[600px]"
                 alt={"listing image"}
               />
               {/* <div
@@ -87,7 +100,237 @@ const ViewListing = () => {
           ))}
         </Swiper>
       </>
-      <Container>
+      <Container className="my-4">
+        <div className="bg-white shadow-md p-3 rounded-md">
+          <div className="flex items-center mb-3 justify-between text-slate-700">
+            <p className="text-xl font-semibold">{getListingData?.name}</p>
+            <div className="flex items-center gap-x-2 flex-col sm:flex-row">
+              <p
+                className={`text-green-700 text-lg font-semibold ${
+                  getListingData?.type === "Rent" &&
+                  getListingData?.discountPrice > 0 &&
+                  "line-through"
+                }`}
+              >
+                {getListingData?.type === "Rent"
+                  ? "$" + getListingData?.regularPrice?.toFixed(2)
+                  : "$" + getListingData?.price?.toFixed(2)}
+              </p>
+              <p className={`text-red-700 text-xl font-semibold`}>
+                {getListingData?.type === "Rent" &&
+                  getListingData?.discountPrice > 0 &&
+                  "$" + getListingData?.discountPrice?.toFixed(2)}
+              </p>
+            </div>
+          </div>
+
+          <div className="my-2 font-semibold text-lg text-slate-700">
+            <div className="flex gap-x-2 items-center">
+              <p>
+                <FaLocationDot />
+              </p>
+              <p>{getListingData?.address}</p>
+            </div>
+
+            <div className="font-normal ml-7 text-gray-400 text-sm">
+              <p>
+                {getListingData?.createdAt &&
+                  "Posted " +
+                    formatDistance(getListingData?.createdAt, new Date()) +
+                    " ago"}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-end flex-col sm:flex-row sm:items-center gap-x-4 my-3 text-gray-500 ml-2">
+            <p className="">{"For " + getListingData?.type}</p>
+            <p className="hidden sm:block">|</p>
+            <p className="flex items-center gap-x-4 ">
+              <FaBed />
+              Bedroom(s): {getListingData?.bedrooms}
+            </p>
+            <p className="hidden sm:block">|</p>
+            <p className="flex items-center gap-x-4">
+              <PiBathtubBold /> Bathroom(s): {getListingData?.bathrooms}
+            </p>
+          </div>
+        </div>
+
+        <div className="my-3 bg-white shadow-md rounded-md p-3 text-slate-700">
+          <p className="text-xl font-semibold text-slate-700">Overview</p>
+
+          <div className="flex gap-x-12 md:justify-between flex-col sm:flex-row flex-wrap">
+            <div>
+              <div className="flex items-center gap-x-2 mt-3">
+                <p>
+                  <FaHouseCircleCheck />
+                </p>
+                <p>Features / Utilities Included</p>
+              </div>
+              <div className="ml-5 text-gray-500">
+                {getListingData?.features?.hydro ? (
+                  <p className="flex items-center">
+                    <TiTick /> Hydro
+                  </p>
+                ) : (
+                  <p className="flex items-center">
+                    <RxCross2 /> Hydro
+                  </p>
+                )}
+
+                {getListingData?.features?.heat ? (
+                  <p className="flex items-center">
+                    <TiTick /> Heat
+                  </p>
+                ) : (
+                  <p className="flex items-center">
+                    <RxCross2 /> Heat
+                  </p>
+                )}
+
+                {getListingData?.features?.water ? (
+                  <p className="flex items-center">
+                    <TiTick /> Water
+                  </p>
+                ) : (
+                  <p className="flex items-center">
+                    <RxCross2 /> Water
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-x-2 mt-3">
+                <p>
+                  <MdWifiPassword />
+                </p>
+                <p>Internet</p>
+              </div>
+              <div className="ml-5 text-gray-500">
+                {getListingData?.features?.internet ? (
+                  <p className="flex items-center">
+                    <TiTick /> Internet
+                  </p>
+                ) : (
+                  <p className="flex items-center">
+                    <RxCross2 /> Internet
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-x-2 mt-3">
+                <p>
+                  <FaCalendarCheck />
+                </p>
+                <p>Available from</p>
+              </div>
+              <div className="ml-6 text-gray-500">
+                <p className="">
+                  {getListingData?.availableFrom &&
+                    format(
+                      new Date(
+                        new Date(getListingData?.availableFrom).valueOf() +
+                          new Date(
+                            getListingData?.availableFrom
+                          ).getTimezoneOffset() *
+                            60 *
+                            1000
+                      ),
+                      "MMMM dd, yyyy"
+                    )}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-x-2 mt-3">
+                <p>
+                  <MdPets />
+                </p>
+                <p>Pet Friendly</p>
+              </div>
+              <div className="ml-5 text-gray-500">
+                <p className="">
+                  {getListingData?.features?.petsAllowed ? (
+                    <p className="flex items-center">
+                      <TiTick /> Yes
+                    </p>
+                  ) : (
+                    <p className="flex items-center">
+                      <RxCross2 /> No
+                    </p>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-x-2 mt-3">
+                <p>
+                  <FaSquareParking />
+                </p>
+                <p>Parking</p>
+              </div>
+              <div className="ml-5 text-gray-500">
+                <p className="">
+                  {getListingData?.features?.parking ? (
+                    <p className="flex items-center">
+                      <TiTick /> Yes
+                    </p>
+                  ) : (
+                    <p className="flex items-center">
+                      <RxCross2 /> No
+                    </p>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-x-2 mt-3">
+                <p>
+                  <GiSofa />
+                </p>
+                <p>Furnished</p>
+              </div>
+              <div className="ml-5 text-gray-500">
+                <p className="">
+                  {getListingData?.features?.furnished ? (
+                    <p className="flex items-center">
+                      <TiTick /> Yes
+                    </p>
+                  ) : (
+                    <p className="flex items-center">
+                      <RxCross2 /> No
+                    </p>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="my-3 bg-white shadow-md rounded-md p-3 text-slate-700">
+          <p className="text-xl font-semibold">Description</p>
+
+          <div>
+            <p className="text-gray-500">{getListingData?.description}</p>
+          </div>
+        </div>
+
+        <div>
+          <Button
+            type={"button"}
+            title={"Contact Landlord"}
+            className={
+              "bg-slate-700 text-white my-2 w-full uppercase hover:opacity-75 transition disabled:opacity-80 disabled:cursor-not-allowed"
+            }
+          />
+        </div>
+
         <Toaster />
       </Container>
     </ReactPlaceholder>

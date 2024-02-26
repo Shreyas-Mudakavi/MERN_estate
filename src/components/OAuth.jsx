@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 
 const OAuth = () => {
   const navigate = useNavigate();
-  const { isFetching } = useSelector((state) => state.auth);
+  const { isFetching } = useSelector((state) => state.persistedReducer.auth);
   const dispatch = useDispatch();
 
   const handleGoogleClick = async () => {
