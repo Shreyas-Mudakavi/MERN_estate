@@ -34,7 +34,7 @@ const Header = () => {
 
       dispatch(getUserSuccess(data?.user));
     } catch (error) {
-      toast.error("User not found!", {
+      toast.error("Please sign-in.", {
         style: {
           borderRadius: "10px",
           backgroundColor: "rgb(51 65 85)",
@@ -43,6 +43,7 @@ const Header = () => {
       });
       // TODO: logout user
       dispatch(getUserSuccess(error?.response?.data?.error?.message));
+      dispatch(logOut());
       return;
     }
   };

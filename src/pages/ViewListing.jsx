@@ -10,7 +10,7 @@ import Container from "react-bootstrap/Container";
 import ReactPlaceholder from "react-placeholder";
 import toast, { Toaster } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosUtil";
 import {
   getListingFailure,
@@ -26,16 +26,23 @@ import { format, formatDistance } from "date-fns";
 import { PiBathtubBold } from "react-icons/pi";
 import { FaBed, FaCalendarCheck } from "react-icons/fa";
 import Button from "../components/Button";
+import Contact from "../components/Contact";
+import {
+  deleteListingFailure,
+  deleteListingStart,
+  deleteListingSuccess,
+} from "../redux/listing/listingSlice";
 
 const ViewListing = () => {
   SwiperCore.use([Navigation]);
   const params = useParams();
+  const { token, user } = useSelector((state) => state.persistedReducer.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { token, user } = useSelector((state) => state.persistedReducer.auth);
   const { getListingData, loadingGetListing, getListingError } = useSelector(
     (state) => state.getListing
   );
+  const [contactLandlord, setContactLandlord] = useState(false);
 
   const fetchListing = async () => {
     dispatch(getListingStart());
@@ -71,6 +78,30 @@ const ViewListing = () => {
   useEffect(() => {
     fetchListing();
   }, []);
+
+  const handleDeleteListing = async (deleteId) => {
+    dispatch(deleteListingStart());
+
+    try {
+      const { data } = await axiosInstance.delete(
+        `/api/listing/delete-listing/${deleteId}`,
+        { headers: { Authorization: token } }
+      );
+
+      setTimeout(() => {
+        dispatch(deleteListingSuccess(data?.listings));
+      }, 1200);
+    } catch (error) {
+      dispatch(deleteListingFailure(error?.response?.data?.error?.message));
+      return toast.error(error?.response?.data?.error?.message, {
+        style: {
+          borderRadius: "10px",
+          backgroundColor: "rgb(51 65 85)",
+          color: "#fff",
+        },
+      });
+    }
+  };
 
   return (
     <ReactPlaceholder
@@ -321,15 +352,44 @@ const ViewListing = () => {
           </div>
         </div>
 
-        <div>
-          <Button
-            type={"button"}
-            title={"Contact Landlord"}
-            className={
-              "bg-slate-700 text-white my-2 w-full uppercase hover:opacity-75 transition disabled:opacity-80 disabled:cursor-not-allowed"
-            }
-          />
-        </div>
+        {getListingData?.user?._id !== user ? (
+          <div>
+            {!contactLandlord && (
+              <Button
+                type={"button"}
+                title={"Contact Landlord"}
+                onClick={() => setContactLandlord(true)}
+                className={
+                  "bg-slate-700 text-white my-2 w-full uppercase hover:opacity-75 transition disabled:opacity-80 disabled:cursor-not-allowed"
+                }
+              />
+            )}
+
+            {contactLandlord && <Contact getListingData={getListingData} />}
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-x-12 flex-col sm:flex-row">
+            <Button
+              type={"button"}
+              onClick={() => {
+                navigate(`/update-listing/${getListingData?._id}`);
+              }}
+              title={"Update Listing"}
+              className={
+                "bg-green-700 text-white my-2 w-full uppercase hover:opacity-75 transition disabled:opacity-80 disabled:cursor-not-allowed"
+              }
+            />
+
+            <Button
+              type={"button"}
+              onClick={() => handleDeleteListing(data?._id)}
+              title={"Delete Listing"}
+              className={
+                "bg-red-700 text-white my-2 w-full uppercase hover:opacity-75 transition disabled:opacity-80 disabled:cursor-not-allowed"
+              }
+            />
+          </div>
+        )}
 
         <Toaster />
       </Container>
