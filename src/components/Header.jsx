@@ -16,6 +16,7 @@ import { logOut } from "../redux/auth/authSlice";
 
 const Header = () => {
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
   const { token, isFetching, user } = useSelector(
     (state) => state.persistedReducer.auth
   );
@@ -56,6 +57,29 @@ const Header = () => {
 
   const handleCloseMenu = () => setShowMenu(false);
   const handleShowMenu = () => setShowMenu(true);
+
+  const handleSearchSubmit = async (e) => {
+    e.preventDefault();
+
+    if (searchTerm?.trim().length === 0) {
+      return;
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set("searchTerm", searchTerm);
+    const searchQuery = urlParams.toString();
+
+    navigate(`/search?${searchQuery}`);
+  };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const seachTermFromUrl = urlParams.get("searchTerm");
+
+    if (seachTermFromUrl) {
+      setSearchTerm(seachTermFromUrl);
+    }
+  }, [location.search]);
 
   return (
     <header className="bg-slate-200 shadow-md transition-all duration-300 ease-in-out">
@@ -191,15 +215,27 @@ const Header = () => {
           </h1>
         </Link>
 
-        <form className="hidden sm:flex bg-slate-100 p-3 rounded-lg items-center">
+        <form
+          onSubmit={handleSearchSubmit}
+          className="hidden sm:flex bg-slate-100  rounded-lg items-center"
+        >
           <input
             type="text"
-            name="search"
+            name="searchTerm"
             placeholder="Search..."
-            className="bg-transparent w-24 sm:w-64 focus:outline-none"
+            className="bg-transparent w-24 sm:w-64 focus:outline-none px-2 py-2"
             autoComplete="off"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <FaSearch className="text-slate-600 cursor-pointer hover:opacity-75 transition" />
+          <Button
+            title={
+              <FaSearch className="text-slate-600 cursor-pointer hover:opacity-75 transition" />
+            }
+            className={``}
+            type={"submit"}
+          />
+          {/* <FaSearch className="text-slate-600 cursor-pointer hover:opacity-75 transition" /> */}
         </form>
 
         <ul className="flex sm:gap-4 items-center">
@@ -299,15 +335,25 @@ const Header = () => {
         </ul>
       </div>
 
-      <form className="bg-slate-100 p-3 rounded-lg flex sm:hidden items-center">
+      <form
+        onSubmit={handleSearchSubmit}
+        className="bg-slate-100 rounded-lg flex sm:hidden items-center"
+      >
         <input
           type="text"
-          name="search"
+          name="searchTerm"
           placeholder="Search..."
-          className="bg-transparent w-full focus:outline-none"
+          className="bg-transparent w-full focus:outline-none px-2 py-2"
           autoComplete="off"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <FaSearch className="text-slate-600 cursor-pointer hover:opacity-75 transition" />
+        <Button
+          title={
+            <FaSearch className="text-slate-600 cursor-pointer hover:opacity-75 transition" />
+          }
+          type={"submit"}
+        />
       </form>
 
       <Toaster />

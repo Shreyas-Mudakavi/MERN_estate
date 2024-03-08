@@ -15,6 +15,7 @@ import UpdateListing from "./pages/UpdateListing";
 import ViewListing from "./pages/ViewListing";
 
 import ProtectedRoute from "../utils/ProtectedRoute";
+import Search from "./pages/Search";
 
 const App = () => {
   return (
@@ -65,6 +66,7 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="/search" element={<Search />} />
       </Routes>
     </BrowserRouter>
   );
