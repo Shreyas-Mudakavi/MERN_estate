@@ -50,6 +50,10 @@ const Profile = () => {
   const [showDelModal, setShowDelModal] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     setFormData({
       username: userData?.username,
       email: userData?.email,

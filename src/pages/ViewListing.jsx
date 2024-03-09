@@ -44,6 +44,10 @@ const ViewListing = () => {
   );
   const [contactLandlord, setContactLandlord] = useState(false);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const fetchListing = async () => {
     dispatch(getListingStart());
     try {

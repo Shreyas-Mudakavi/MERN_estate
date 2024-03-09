@@ -27,6 +27,10 @@ const ShowListings = () => {
   const { loadingListing, listingData, listingError, listingErrorMsg } =
     useSelector((state) => state.listing);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const fetchListings = async () => {
     dispatch(getListingStart());
     try {

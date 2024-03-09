@@ -4,7 +4,7 @@ import toast, { Toaster } from "react-hot-toast";
 import Container from "react-bootstrap/Container";
 import Button from "../components/Button";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   getDownloadURL,
   getStorage,
@@ -51,6 +51,10 @@ const CreateListing = () => {
   const [propertyType, setPropertyType] = useState("");
   const [imageFiles, setImageFiles] = useState(null);
   const [uploadPercentage, setUploadPercentage] = useState(0);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handlePropertyType = (e) => {
     setPropertyType(e.target.value);

@@ -7,6 +7,7 @@ import getUserReducer from "./user/userSlice";
 import listingReducer from "./listing/listingSlice";
 import getListingReducer from "./listing/getListingSlice";
 import searchListingReducer from "./listing/searchListingSlice";
+import homeListingsReducer from "./listing/getHomeListings";
 
 const persistConfig = {
   key: "auth",
@@ -33,6 +34,7 @@ export const store = configureStore({
     listing: listingReducer,
     getListing: getListingReducer,
     searchListing: searchListingReducer,
+    homeListings: homeListingsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -27,6 +27,8 @@ const SignIn = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+
     if (token) {
       navigate("/");
     }

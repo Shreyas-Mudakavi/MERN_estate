@@ -1,6 +1,5 @@
 import { FaSearch } from "react-icons/fa";
 import ReactPlaceholder from "react-placeholder";
-import "react-placeholder/lib/reactPlaceholder.css";
 import toast, { Toaster } from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import Offcanvas from "react-bootstrap/Offcanvas";

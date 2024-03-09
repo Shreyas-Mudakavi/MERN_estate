@@ -31,6 +31,10 @@ const Search = () => {
   });
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
 
     const searchTermFromUrl = urlParams.get("searchTerm");
