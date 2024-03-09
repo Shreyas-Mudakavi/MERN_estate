@@ -75,23 +75,16 @@ const Home = () => {
         ready={!loadingHomeListings}
       >
         <Swiper navigation>
-          {homeListingsData?.discountListings?.map((discountListing) => (
-            <SwiperSlide key={discountListing?._id}>
-              {/* <div
-                className="h-[500px]"
-                style={{
-                  background: `url(${discountListing?.imageUrls[0]}) center no-repeat`,
-                  backgroundSize: "cover",
-                }}
-              ></div> */}
-
-              <img
-                src={discountListing?.imageUrls[0]}
-                className="h-[500px] w-full object-cover"
-                alt="listing image"
-              />
-            </SwiperSlide>
-          ))}
+          {homeListingsData?.discountListings?.length !== 0 &&
+            homeListingsData?.discountListings?.map((discountListing) => (
+              <SwiperSlide key={discountListing?._id}>
+                <img
+                  src={discountListing?.imageUrls[0]}
+                  className="h-[500px] w-full object-cover"
+                  alt="listing image"
+                />
+              </SwiperSlide>
+            ))}
         </Swiper>
       </ReactPlaceholder>
 
@@ -117,6 +110,11 @@ const Home = () => {
             </div>
 
             <div className="flex flex-wrap gap-4">
+              {homeListingsData?.discountListings?.length === 0 && (
+                <p className="text-sm text-blue-800 text-center w-full">
+                  No listings!
+                </p>
+              )}
               {homeListingsData?.discountListings?.map((discountListing) => (
                 <ListingItem
                   key={discountListing?._id}
@@ -140,6 +138,12 @@ const Home = () => {
             </div>
 
             <div className="flex flex-wrap gap-4">
+              {homeListingsData?.rentListings?.length === 0 && (
+                <p className="text-sm text-blue-800 text-center w-full">
+                  No listings!
+                </p>
+              )}
+
               {homeListingsData?.rentListings?.map((rentListing) => (
                 <ListingItem key={rentListing?._id} listing={rentListing} />
               ))}
@@ -160,6 +164,12 @@ const Home = () => {
             </div>
 
             <div className="flex flex-wrap gap-4">
+              {homeListingsData?.sellListings?.length === 0 && (
+                <p className="text-sm text-blue-800 text-center w-full">
+                  No listings!
+                </p>
+              )}
+
               {homeListingsData?.sellListings?.map((sellListing) => (
                 <ListingItem key={sellListing?._id} listing={sellListing} />
               ))}

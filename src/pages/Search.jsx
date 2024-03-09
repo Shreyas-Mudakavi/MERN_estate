@@ -282,6 +282,11 @@ const Search = () => {
               showLoadingAnimation
               ready={!loadingSearchListing}
             >
+              {searchListingData?.length === 0 && (
+                <p className="text-lg text-blue-800 text-center w-full">
+                  No listings!
+                </p>
+              )}
               {searchListingData?.map((listing) => (
                 <ListingItem key={listing?._id} listing={listing} />
               ))}

@@ -99,6 +99,11 @@ const ShowListings = () => {
         showLoadingAnimation
         ready={!loadingListing}
       >
+        {listingData?.length === 0 && (
+          <p className="text-lg text-blue-800 text-center w-full">
+            No listings!
+          </p>
+        )}
         {listingData?.map((data) => (
           <ListingBox
             data={data}

@@ -115,6 +115,11 @@ const ViewListing = () => {
       showLoadingAnimation
       ready={!loadingGetListing}
     >
+      {getListingError && (
+        <p className="text-xl text-blue-800 text-center w-full">
+          Something went wrong!
+        </p>
+      )}
       <>
         <Swiper navigation>
           {getListingData?.imageUrls?.map((image, i) => (
